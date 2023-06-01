@@ -4,7 +4,7 @@
  ## technologies 
 
 
- 
+
  
  
  ## installation process 
@@ -14,3 +14,6 @@
  ```
 
  ### run command
+ ```
+ 
+ ```
