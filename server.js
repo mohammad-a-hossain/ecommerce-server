@@ -4,49 +4,48 @@ const morgan = require('morgan')
 const bodyParser = require('body-parser')
 const cors = require("cors");
 require('dotenv').config()
-//import routes
-const authRoute = require('./routes/auth')
-const fs = require('fs')
+const adminRoutes = require('./routes/admin')
 
 
 // app scaffolding
 const app = express()
 
 
-// db connection
-mongoose.connect(process.env.DATABASE,
-        { 
-          useNewUrlParser: true,
-          useCreateIndex: true,
-          useFindAndModify: false,
-          useUnifiedTopology: true
-       
-        }
-        ).then(()=> console.log('db connect')).catch((err)=>console.log('db connection errror',err))
+const uri = process.env.DATABASE;
+mongoose.connect(uri, { useNewUrlParser: true, useUnifiedTopology: 
+true });
 
+const connection = mongoose.connection;
+
+
+try{
+connection.once('open', () => {
+    console.log("MongoDB database connection established successfully");
+})
+} catch(err) {
+console.log(err);
+}
 
 // middleware
 app.use(morgan('dev'));
 app.use(express.json({ limit: "5mb" }));
 app.use(bodyParser.json({limit: "30mb", extended: true }))
-//app.use(bodyParser.urlencoded({ limit: "30mb", extended: true }));
+app.use(bodyParser.urlencoded({ limit: "30mb", extended: true }));
 app.use(cors());
 
 
-// app.use(function(req, res, next) {
-//   res.header("Access-Control-Allow-Origin", "*");
-//   res.setHeader('Access-Control-Allow-Methods', 'GET, POST, OPTIONS, PUT, PATCH, DELETE');
-//   res.header("Access-Control-Allow-Headers", "Origin, X-Requested-With, Content-Type, Accept");
-//   next();
-// });
+app.get('/', (req,res,next) =>{
+   res.status(200).json({
+    message:'this is get server menthod'
+   })
+})
 
 
-
-fs.readdirSync('./routes').map((rt)=> app.use('/api',require('./routes/' + rt)))
+app.use('/api', adminRoutes)
 
 
 // use port
 
-const port = process.env.PORT || 7676
+const port = process.env.PORT || 7777
 
 app.listen(port, ()=> console.log(`server is running on port ${port}`))
