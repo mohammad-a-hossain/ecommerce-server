@@ -2,9 +2,17 @@ const express = require('express')
 const mongoose =require('mongoose')
 const morgan = require('morgan')
 const bodyParser = require('body-parser')
+const cookiParser = require('cookie-parser')
+const expressValidator= require('express-validator')
 const cors = require("cors");
 require('dotenv').config()
-const adminRoutes = require('./routes/admin')
+const crypto = require('crypto')
+//const uuidv1 = require('uuid') 
+
+
+
+
+const adminRoutes = require('./Admin-pannel/routes/admin')
 
 
 // app scaffolding
@@ -31,13 +39,15 @@ app.use(morgan('dev'));
 app.use(express.json({ limit: "5mb" }));
 app.use(bodyParser.json({limit: "30mb", extended: true }))
 app.use(bodyParser.urlencoded({ limit: "30mb", extended: true }));
+app.use(cookiParser())
+app.use(expressValidator())
 app.use(cors());
 
 
 app.get('/', (req,res,next) =>{
    res.status(200).json({
     message:'this is get server menthod'
-   })
+   }) 
 })
 
 
