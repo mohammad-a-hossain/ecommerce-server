@@ -1,3 +1,13 @@
+const mongoose = require('mongoose')
+const {ObjectId} = mongoose.Schema
+
+
+exports.validateMongodb = (id) =>{
+ const isValid = mongoose.isValidObjectId(id)
+ if(!isValid) throw new Error('the id of Mongo is not valid')
+}
+
+
 
 
 // exports.userSignupValidator=(req,res,next)=>{

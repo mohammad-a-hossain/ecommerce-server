@@ -1,6 +1,7 @@
 const Admin = require('../modals/AdminUser')
 const asyncHandler = require('express-async-handler')
 const { generateToken } = require('../utills/generateToken')
+const {validateMongodb} = require('../validator/index')
 //let uuidv1 = require('uuidv1')
 //const {errorHandler }= require('../helper/dbErrorHandler')
 //const jwt = require('jsonwebtoken')
@@ -61,6 +62,8 @@ exports.register =asyncHandler (async(req, res) =>{
   
       exports.getSingleAdmin = asyncHandler (async(req, res) =>{
           const {id } = req.params
+          // validation if thi id of mongo or not
+          validateMongodb(id)
          try{
            
             const getAdmin= await Admin.findById(id) 
@@ -79,7 +82,8 @@ exports.register =asyncHandler (async(req, res) =>{
 
          exports.deleteaUser = asyncHandler(async (req, res) => {
             const { id } = req.params;
-           // validateMongoDbId(id);
+            // validation if thi id of mongo or not
+            validateMongodb(id);
           
             try {
               const deleteaUser = await Admin.findByIdAndDelete(id);
@@ -94,7 +98,7 @@ exports.register =asyncHandler (async(req, res) =>{
 
           exports.updateAdmin= asyncHandler(async (req, res) => {
             const { _id } = req.admin;
-           // validateMongoDbId(id);
+            validateMongodb(_id);
           
             try {
               const updateAdmin = await Admin.findByIdAndUpdate(_id,{
@@ -114,6 +118,8 @@ exports.register =asyncHandler (async(req, res) =>{
           
           exports.blockAdmin=asyncHandler(async(req,res)=>{
             const {id} = req.params 
+              // validation if thi id of mongo or not
+              validateMongodb(id);
             try{
            const blockAdmin=await Admin.findByIdAndUpdate(id, {isBlocked:true,},{new:true})
            res.json({message:'user is blocked'})
@@ -126,6 +132,9 @@ exports.register =asyncHandler (async(req, res) =>{
 
           exports.unBlockAdmin=asyncHandler(async(req,res)=>{
             const {id} = req.params 
+            // validation if thi id of mongo or not
+            validateMongodb(id);
+
             try{
            const unblockAdmin=await Admin.findByIdAndUpdate(id, {isBlocked:false,},{new:true})
            res.json({message:'user is unblocked'})
