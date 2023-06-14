@@ -93,11 +93,11 @@ exports.register =asyncHandler (async(req, res) =>{
           });
 
           exports.updateAdmin= asyncHandler(async (req, res) => {
-            const { id } = req.params;
+            const { _id } = req.admin;
            // validateMongoDbId(id);
           
             try {
-              const updateAdmin = await Admin.findByIdAndUpdate(id,{
+              const updateAdmin = await Admin.findByIdAndUpdate(_id,{
                firstname: req?.body?.firstname,
                lastname: req?.body?.lastname,
                email: req?.body?.email,
@@ -110,3 +110,27 @@ exports.register =asyncHandler (async(req, res) =>{
             }
           })
 
+
+          
+          exports.blockAdmin=asyncHandler(async(req,res)=>{
+            const {id} = req.params 
+            try{
+           const blockAdmin=await Admin.findByIdAndUpdate(id, {isBlocked:true,},{new:true})
+           res.json({message:'user is blocked'})
+            }catch(error){
+              throw new Error(error)
+            }
+            // next()
+          })
+
+
+          exports.unBlockAdmin=asyncHandler(async(req,res)=>{
+            const {id} = req.params 
+            try{
+           const unblockAdmin=await Admin.findByIdAndUpdate(id, {isBlocked:false,},{new:true})
+           res.json({message:'user is unblocked'})
+            }catch(error){
+              throw new Error(error)
+            }
+            // next()
+          })

@@ -5,10 +5,12 @@ const express = require('express')
 //import { registerMail } from '../controllers/mailer.js'
 //const {Auth, localVariables } = require('../middlewere/auth');
 const router = express.Router()
-const {register,login,getAllAdmin,getSingleAdmin, deleteaUser, updateAdmin}= require('../controllers/adminUser');
+const {register,login,getAllAdmin,
+    getSingleAdmin, deleteaUser, 
+    updateAdmin,blockAdmin,unBlockAdmin }= require('../controllers/adminUser');
 //const { notFound,errorHandler} = require('../middlewere/errors')
  //const { Route } = require('express');
- const { authMiddlewere } = require('../middlewere/authMiddlewere')
+ const { authMiddlewere,IsAuth } = require('../middlewere/authMiddlewere')
 
 
 
@@ -19,10 +21,12 @@ router.post('/register',register); // register user
 router.post('/login',login);
 router.get('/getalladmin',getAllAdmin ) // login in app
 
-router.get('/:id',authMiddlewere,getSingleAdmin) 
+router.get('/:id',authMiddlewere,IsAuth,getSingleAdmin) 
 
 router.delete('/:id',deleteaUser)
-router.put('/:id',updateAdmin)
+router.put('/:id',authMiddlewere,updateAdmin)
+router.put('/block-admin/:id',authMiddlewere,IsAuth,blockAdmin)
+router.put('/unblock-admin/:id',authMiddlewere,IsAuth,unBlockAdmin)
 /** GET Methods */
 //router.route('/user/:username').get(controller.getUser) // user with username
 //router.route('/generateOTP').get(controller.verifyUser, localVariables, controller.generateOTP) // generate random OTP
