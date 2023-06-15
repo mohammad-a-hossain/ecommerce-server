@@ -1,17 +1,13 @@
 const Admin = require('../modals/AdminUser')
 const asyncHandler = require('express-async-handler')
-const { generateToken } = require('../utills/generateToken')
-const {validateMongodb} = require('../validator/index')
-//let uuidv1 = require('uuidv1')
-//const {errorHandler }= require('../helper/dbErrorHandler')
-//const jwt = require('jsonwebtoken')
-//const { expressJwt } = require('express-jwt'); 
-//const { expressjwt: jwt } = require("express-jwt");
-//const bcrypt= require('bcrypt')
+const { generateToken,generateRefreshToken } = require('../utills/Token')
+const validateMongoDbId = require('../validator/index')
+const jwt = require('jsonwebtoken')
+
 
 
 exports.register =asyncHandler (async(req, res) =>{
-   const { firstname,lastname,email, mobile, password} = req.body 
+   const { email} = req.body 
 
    const findadmin= await Admin.findOne({email})
    if(!findadmin){
@@ -28,8 +24,18 @@ exports.register =asyncHandler (async(req, res) =>{
       const { email, password} = req.body 
    
       const findadmin= await Admin.findOne({email})
+     // if (findadmin.role !== "admin") throw new Error("Not Authorised");
+
       if(findadmin && (await findadmin.isPasswordMatched(password))){
-      
+        const refreshToken = await generateRefreshToken(findadmin?._id)
+        const updateAdminRefreshToken= await Admin.findByIdAndUpdate(findadmin.id,
+          {
+            refreshToken:refreshToken,
+        },{new:true})
+        res.cookie("refreshToken",refreshToken,{
+          httpOnly:true,
+          maxAge:  72 * 60 * 60 * 1000,
+        })
          res.json({
             _id: findadmin?._id,
             firstname:findadmin?.firstname,
@@ -47,6 +53,51 @@ exports.register =asyncHandler (async(req, res) =>{
       )
      
 
+      // handle refresh token
+
+exports.handleRefreshToken = asyncHandler(async (req, res) => {
+  const cookie = req.cookies;
+  console.log(cookie)
+  if (!cookie?.refreshToken) throw new Error("No Refresh Token in Cookies");
+  const refreshToken = cookie.refreshToken;
+  console.log(refreshToken)
+  const admin = await Admin.findOne({ refreshToken });
+  if (!admin) throw new Error(" No Refresh token present in db or not matched");
+  jwt.verify(refreshToken, process.env.JWT_SECRET, (err, decoded) => {
+    if (err || admin.id !== decoded.id) {
+      throw new Error("There is something wrong with refresh token");
+    }
+    const accessToken = generateToken(admin?._id);
+    res.json({ accessToken });
+  });
+})
+
+
+
+    exports.logout= asyncHandler(async (req, res) => {
+      const cookie = req.cookies;
+      console.log(cookie)
+       if (!cookie?.refreshToken) throw new Error("No Refresh Token in Cookies");
+      const refreshToken = cookie.refreshToken;
+      const admin = await Admin.findOne({refreshToken });
+      if (!admin) {
+        res.clearCookie("refreshToken", {
+          httpOnly: true,
+          secure: true,
+        });
+        return res.sendStatus(204); // forbidden
+      }
+      await Admin.findOneAndUpdate(refreshToken, {
+        refreshToken: "",
+      });
+      res.clearCookie("refreshToken", {
+        httpOnly: true,
+        secure: true,
+      });
+      res.sendStatus(204); // forbidden
+    });
+
+
       exports.getAllAdmin= asyncHandler (async(req, res) =>{
          
          try{
@@ -63,7 +114,7 @@ exports.register =asyncHandler (async(req, res) =>{
       exports.getSingleAdmin = asyncHandler (async(req, res) =>{
           const {id } = req.params
           // validation if thi id of mongo or not
-          validateMongodb(id)
+          //validateMongoDbId(id)
          try{
            
             const getAdmin= await Admin.findById(id) 
@@ -83,7 +134,7 @@ exports.register =asyncHandler (async(req, res) =>{
          exports.deleteaUser = asyncHandler(async (req, res) => {
             const { id } = req.params;
             // validation if thi id of mongo or not
-            validateMongodb(id);
+          //  validateMongoDbId(id);
           
             try {
               const deleteaUser = await Admin.findByIdAndDelete(id);
@@ -98,7 +149,7 @@ exports.register =asyncHandler (async(req, res) =>{
 
           exports.updateAdmin= asyncHandler(async (req, res) => {
             const { _id } = req.admin;
-            validateMongodb(_id);
+        //    validateMongoDbId(_id);
           
             try {
               const updateAdmin = await Admin.findByIdAndUpdate(_id,{
@@ -117,9 +168,9 @@ exports.register =asyncHandler (async(req, res) =>{
 
           
           exports.blockAdmin=asyncHandler(async(req,res)=>{
-            const {id} = req.params 
+            const {id} = req.admin
               // validation if thi id of mongo or not
-              validateMongodb(id);
+          //    validateMongoDbId(id);
             try{
            const blockAdmin=await Admin.findByIdAndUpdate(id, {isBlocked:true,},{new:true})
            res.json({message:'user is blocked'})
@@ -131,9 +182,9 @@ exports.register =asyncHandler (async(req, res) =>{
 
 
           exports.unBlockAdmin=asyncHandler(async(req,res)=>{
-            const {id} = req.params 
+            const {id} = req.admin
             // validation if thi id of mongo or not
-            validateMongodb(id);
+         //   validateMongoDbId(id);
 
             try{
            const unblockAdmin=await Admin.findByIdAndUpdate(id, {isBlocked:false,},{new:true})
