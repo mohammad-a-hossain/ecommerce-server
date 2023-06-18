@@ -22,7 +22,7 @@ router.get('/getalladmin',getAllAdmin ) // login in app
 router.get('/:id',authMiddlewere,IsAuth,getSingleAdmin) 
 router.get('/refreshToken',handleRefreshToken)
 
-router.get('/logout',logout)
+router.post('/logout',logout)
 
 router.delete('/:id',deleteaUser)
 router.put('/:id',authMiddlewere,updateAdmin)

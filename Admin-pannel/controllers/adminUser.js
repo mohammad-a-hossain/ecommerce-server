@@ -57,10 +57,10 @@ exports.register =asyncHandler (async(req, res) =>{
 
 exports.handleRefreshToken = asyncHandler(async (req, res) => {
   const cookie = req.cookies;
-  console.log(cookie)
+  console.log('cokie',cookie)
   if (!cookie?.refreshToken) throw new Error("No Refresh Token in Cookies");
   const refreshToken = cookie.refreshToken;
-  console.log(refreshToken)
+ // console.log(refreshToken)
   const admin = await Admin.findOne({ refreshToken });
   if (!admin) throw new Error(" No Refresh token present in db or not matched");
   jwt.verify(refreshToken, process.env.JWT_SECRET, (err, decoded) => {
@@ -72,30 +72,61 @@ exports.handleRefreshToken = asyncHandler(async (req, res) => {
   });
 })
 
+// exports.logout= asyncHandler(async (req, res) => {
+//   const refreshToken = cookie.refreshToken;
+//   const admin = await Admin.findOne({refreshToken });
+//       if (!admin) {
+//         res.clearCookie("refreshToken", {
+//           httpOnly: true,
+//           secure: true,
+//         });
+//         return res.sendStatus(204); // forbidden
+//       }
+//       await Admin.findOneAndUpdate(refreshToken, {
+//         refreshToken: "",
+//       });
+//       res.clearCookie("refreshToken", {
+//         httpOnly: true,
+//         secure: true,
+//        });
+//     res.status(200).json({message:'admin log out'})
+// })
 
 
-    exports.logout= asyncHandler(async (req, res) => {
-      const cookie = req.cookies;
-      console.log(cookie)
-       if (!cookie?.refreshToken) throw new Error("No Refresh Token in Cookies");
-      const refreshToken = cookie.refreshToken;
-      const admin = await Admin.findOne({refreshToken });
-      if (!admin) {
-        res.clearCookie("refreshToken", {
-          httpOnly: true,
-          secure: true,
-        });
-        return res.sendStatus(204); // forbidden
-      }
-      await Admin.findOneAndUpdate(refreshToken, {
-        refreshToken: "",
-      });
-      res.clearCookie("refreshToken", {
-        httpOnly: true,
-        secure: true,
-      });
-      res.sendStatus(204); // forbidden
-    });
+
+
+    // exports.logout= asyncHandler(async (req, res) => {
+    //   const cookie = req.cookies;
+     // console.log('logout',cookie)
+    //    if (!cookie?.refreshToken) throw new Error("No Refresh Token in Cookies");
+    //   const refreshToken = cookie.refreshToken;
+    //   const admin = await Admin.findOne({refreshToken });
+    //   if (!admin) {
+    //     res.clearCookie("refreshToken", {
+    //       httpOnly: true,
+    //       secure: true,
+    //     });
+    //     return res.sendStatus(204); // forbidden
+    //   }
+    //   await Admin.findOneAndUpdate(refreshToken, {
+    //     refreshToken: "",
+    //   });
+    //   res.clearCookie("refreshToken", {
+    //     httpOnly: true,
+    //     secure: true,
+    //   });
+    //   res.sendStatus(204); // forbidden
+    // });
+
+    exports.logout=asyncHandler(async (req,res) =>{
+      res.cookie('refreshToken','',{
+         httpOnly: true,
+        expires: new Date(0),
+      })
+
+      res.status(200).json({message:'user logout'})
+      
+    })
 
 
       exports.getAllAdmin= asyncHandler (async(req, res) =>{

@@ -52,7 +52,7 @@ app.use(cors());
 // })
 
 
-app.use('/api', adminRouter)
+app.use('/api/admin', adminRouter)
 app.use(notFound);
 app.use(errorHandler);
 
